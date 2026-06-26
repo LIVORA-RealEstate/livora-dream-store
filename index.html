@@ -639,8 +639,8 @@ const AGENT_URL   = 'https://livora-agent.onrender.com';
 const STORE_URL   = 'https://livoradream.com';
 const WC_API      = STORE_URL + '/wp-json/wc/v3/products';
 // مفاتيح WooCommerce العامة للقراءة فقط (ضعها هنا بعد إنشائها)
-const WC_KEY      = 'ck_REPLACE_ME_READ_ONLY';
-const WC_SECRET   = 'cs_REPLACE_ME_READ_ONLY';
+const WC_KEY      = 'ck_da96e2149a665f834505ff076893002479944097';
+const WC_SECRET   = 'cs_be3c72882aae6339d7c51fcd8940b83f1ffa7927';
 const CHAT_URL    = AGENT_URL + '/chat';
 
 // ─── STATE ────────────────────────────────────
@@ -749,6 +749,44 @@ function applyFilters(){
     prods.length > 0 ? `عرض ${prods.length} منتج` : 'لا توجد منتجات في هذه الفئة';
 }
 
+// ─── PRODUCT IMAGE FALLBACK ───────────────────
+const PRODUCT_IMAGES = [
+  { keys: ['كفر','غطاء جوال','حافظة جوال','مقاوم للصدمات','phone case','patterned'],
+    img: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&fit=crop&q=80' },
+  { keys: ['حامل جوال','حامل للمكتب','adjustable phone','phone holder'],
+    img: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=500&fit=crop&q=80' },
+  { keys: ['بطاقة محفظة','محفظة','card holder','wallet'],
+    img: 'https://images.unsplash.com/photo-1628624747186-a941c476b7ef?w=500&fit=crop&q=80' },
+  { keys: ['شاشة حماية','واقي شاشة','زجاجية','screen'],
+    img: 'https://images.unsplash.com/photo-1605236453806-6ff36851218e?w=500&fit=crop&q=80' },
+  { keys: ['ساعة ذكية','ساعة رياضية','smart watch','smartwatch'],
+    img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&fit=crop&q=80' },
+  { keys: ['سماعة','سماعات','earbuds','bluetooth','بلوتوث'],
+    img: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&fit=crop&q=80' },
+  { keys: ['شاحن لاسلكي','wireless charger','شواحن'],
+    img: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&fit=crop&q=80' },
+  { keys: ['باور بانك','بنك طاقة','power bank'],
+    img: 'https://images.unsplash.com/photo-1609592806596-fd02e96ef1c7?w=500&fit=crop&q=80' },
+  { keys: ['حامل سيارة','مغناطيسي','car holder'],
+    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&fit=crop&q=80' },
+  { keys: ['كابل','شحن سريع','cable','usb','type-c'],
+    img: 'https://images.unsplash.com/photo-1562016600-ece5e742aafd?w=500&fit=crop&q=80' },
+  { keys: ['كاميرا','عدسة','camera','lens'],
+    img: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=500&fit=crop&q=80' },
+  { keys: ['popsocket','حلقة','ring holder'],
+    img: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&fit=crop&q=80' },
+  { keys: ['tech hub','smart tech'],
+    img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&fit=crop&q=80' },
+];
+
+function getProductImage(name) {
+  const n = (name || '').toLowerCase();
+  for (const entry of PRODUCT_IMAGES) {
+    if (entry.keys.some(k => n.includes(k.toLowerCase()))) return entry.img;
+  }
+  return 'https://images.unsplash.com/photo-1512054502232-10a0a035d672?w=500&fit=crop&q=80';
+}
+
 function renderProducts(prods){
   const grid = document.getElementById('products-grid');
   if(!prods.length){
@@ -767,9 +805,8 @@ function renderProducts(prods){
     const bdgLabel  = p.on_sale ? 'خصم' : badgeLabels[bdgClass];
     const stars     = Math.round(parseFloat(p.rating||'4'));
     const starsHtml = '★'.repeat(stars) + '☆'.repeat(5-stars);
-    const imgHtml   = p.image
-      ? `<img class="pc-img" src="${p.image}" alt="${p.name}" onerror="this.parentElement.innerHTML='<div class=pc-no-img>📦</div>'">`
-      : `<div class="pc-no-img">📦</div>`;
+    const imgSrc    = p.image && !p.image.includes('woocommerce-placeholder') ? p.image : getProductImage(p.name);
+    const imgHtml   = `<img class="pc-img" src="${imgSrc}" alt="${p.name}" onerror="this.src='${getProductImage(p.name)}'">`;
     const priceHtml = p.on_sale && p.sale
       ? `<div><div class="pc-price-now">${parseFloat(p.sale).toFixed(0)} <small>JD</small></div><div class="pc-price-old">${parseFloat(p.regular).toFixed(0)} JD</div></div>`
       : `<div class="pc-price-now">${parseFloat(p.price||0).toFixed(0)} <small>JD</small></div>`;
